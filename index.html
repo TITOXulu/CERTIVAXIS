@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="9-2bU8EHkSo_y6fjflP5NtcxVnXkoJSEICWgqjPeu4c" />
     <title>CERTIVAXIS | Management Systems & Compliance Consulting</title>
     <meta name="description" content="CERTIVAXIS provides expert ISO compliance consulting services including ISO 9001, ISO 14001, ISO 17025 certification. Get accredited with our 10+ years of expertise.">
     <meta name="keywords" content="ISO certification, ISO 9001, ISO 14001, ISO 17025, compliance consulting, quality management, South Africa">
     <meta name="author" content="CERTIVAXIS">
     <meta name="robots" content="index, follow">
-    
-    <!-- Google Search Console Verification -->
-    <meta name="google-site-verification" content="9-2bU8EHkSo_y6fjflP5NtcxVnXkoJSEICWgqjPeu4c" />
     
     <!-- Open Graph / Social Media Meta Tags -->
     <meta property="og:title" content="CERTIVAXIS | Management Systems & Compliance Consulting">
@@ -1417,17 +1416,17 @@
     <!-- Header -->
     <header>
         <div class="container header-container">
-            <a href="#" class="logo" data-page="home">
+            <a href="/" class="logo" data-page="home">
                 <img src="https://i.imghippo.com/files/QldK2244NDM.png" alt="CERTIVAXIS Logo" class="logo-img">
             </a>
             <nav>
                 <ul>
-                    <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
-                    <li><a href="#" class="nav-link" data-page="services">Services</a></li>
-                    <li><a href="#" class="nav-link" data-page="contact">Contact Us</a></li>
+                    <li><a href="/" class="nav-link active" data-page="home">Home</a></li>
+                    <li><a href="/services" class="nav-link" data-page="services">Services</a></li>
+                    <li><a href="/contact" class="nav-link" data-page="contact">Contact Us</a></li>
                 </ul>
             </nav>
-            <a href="#" class="cta-button" data-page="contact">Book Consultation</a>
+            <a href="/contact" class="cta-button" data-page="contact">Book Consultation</a>
             <div class="mobile-menu">
                 <i class="fas fa-bars"></i>
             </div>
@@ -1442,7 +1441,7 @@
                 <h1 class="animation-element animate-fadeInDown">Management Systems & Compliance Consulting</h1>
                 <p class="animation-element animate-fadeInUp stagger-1">Driving Excellence. Building Trust. Achieving Compliance.</p>
                 <div class="hero-buttons">
-                    <a href="#" class="btn-primary animation-element animate-fadeInUp stagger-2" data-page="contact">Book Consultation Now</a>
+                    <a href="/contact" class="btn-primary animation-element animate-fadeInUp stagger-2" data-page="contact">Book Consultation Now</a>
                     <a href="https://wa.me/message/3377REEFGVMCD1" class="btn-whatsapp animation-element animate-fadeInUp stagger-3" target="_blank">
                         <i class="fab fa-whatsapp"></i> Chat on WhatsApp
                     </a>
@@ -2103,18 +2102,18 @@
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul>
-                        <li><a href="#" class="nav-link" data-page="home">Home</a></li>
-                        <li><a href="#" class="nav-link" data-page="services">Services</a></li>
-                        <li><a href="#" class="nav-link" data-page="contact">Contact Us</a></li>
+                        <li><a href="/" class="nav-link" data-page="home">Home</a></li>
+                        <li><a href="/services" class="nav-link" data-page="services">Services</a></li>
+                        <li><a href="/contact" class="nav-link" data-page="contact">Contact Us</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
                     <h3>Services</h3>
                     <ul>
-                        <li><a href="#" class="nav-link" data-page="services">Integrated Management Systems</a></li>
-                        <li><a href="#" class="nav-link" data-page="services">Audit & Accreditation Support</a></li>
-                        <li><a href="#" class="nav-link" data-page="services">System Design & Documentation</a></li>
-                        <li><a href="#" class="nav-link" data-page="services">Training & Competence Development</a></li>
+                        <li><a href="/services" class="nav-link" data-page="services">Integrated Management Systems</a></li>
+                        <li><a href="/services" class="nav-link" data-page="services">Audit & Accreditation Support</a></li>
+                        <li><a href="/services" class="nav-link" data-page="services">System Design & Documentation</a></li>
+                        <li><a href="/services" class="nav-link" data-page="services">Training & Competence Development</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
@@ -2167,9 +2166,11 @@
     </div>
 
     <script>
-        // All the JavaScript code remains the same as in the previous version
         // Initialize animations on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Handle initial page load based on URL
+            handleRouteChange();
+            
             // Animate hero elements on home page
             if (document.getElementById('home').classList.contains('active')) {
                 const heroElements = document.querySelectorAll('.hero .animation-element');
@@ -2182,14 +2183,64 @@
             
             // Initialize scroll animations
             initScrollAnimations();
-            
-            // Initialize services page animations if it's active
-            if (document.getElementById('services').classList.contains('active')) {
-                setTimeout(() => {
-                    initScrollAnimations();
-                }, 100);
-            }
         });
+
+        // Client-side routing functions
+        function handleRouteChange() {
+            const path = window.location.pathname;
+            let page = 'home';
+            
+            if (path === '/services') {
+                page = 'services';
+            } else if (path === '/contact') {
+                page = 'contact';
+            }
+            
+            switchToPage(page);
+        }
+
+        function updateURL(page) {
+            let path = '/';
+            if (page === 'services') path = '/services';
+            if (page === 'contact') path = '/contact';
+            
+            window.history.pushState({page: page}, '', path);
+            document.title = getPageTitle(page);
+        }
+
+        function getPageTitle(page) {
+            const baseTitle = 'CERTIVAXIS | Management Systems & Compliance Consulting';
+            switch(page) {
+                case 'services': return 'Our Services - ' + baseTitle;
+                case 'contact': return 'Contact Us - ' + baseTitle;
+                default: return baseTitle;
+            }
+        }
+
+        function switchToPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            const targetElement = document.getElementById(page);
+            targetElement.classList.add('active');
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(navLink => {
+                navLink.classList.remove('active');
+            });
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Reinitialize scroll animations
+            setTimeout(() => {
+                initScrollAnimations();
+            }, 100);
+        }
 
         // Mobile menu toggle
         document.querySelector('.mobile-menu').addEventListener('click', function() {
@@ -2212,56 +2263,29 @@
             }
         });
 
-        // Page navigation
+        // Page navigation with routing
         document.querySelectorAll('.nav-link, .logo, .cta-button, .btn-primary, .btn-secondary').forEach(link => {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetPage = this.getAttribute('data-page');
-                
-                // Update active navigation
-                document.querySelectorAll('.nav-link').forEach(navLink => {
-                    navLink.classList.remove('active');
-                });
-                this.classList.add('active');
-                
-                // Add fade out animation to current page
-                const currentPage = document.querySelector('.page-content.active');
-                if (currentPage) {
-                    currentPage.style.opacity = '0';
-                    currentPage.style.transition = 'opacity 0.3s ease';
+                // Only handle internal navigation
+                if (this.getAttribute('data-page')) {
+                    e.preventDefault();
+                    const targetPage = this.getAttribute('data-page');
                     
-                    setTimeout(() => {
-                        // Hide current page
-                        document.querySelectorAll('.page-content').forEach(page => {
-                            page.classList.remove('active');
-                        });
-                        
-                        // Show target page
-                        const targetElement = document.getElementById(targetPage);
-                        targetElement.classList.add('active');
-                        targetElement.style.opacity = '0';
-                        
-                        // Animate in the new page
-                        setTimeout(() => {
-                            targetElement.style.transition = 'opacity 0.5s ease';
-                            targetElement.style.opacity = '1';
-                            
-                            // Reinitialize scroll animations for the new page
-                            setTimeout(() => {
-                                initScrollAnimations();
-                            }, 100);
-                        }, 50);
-                    }, 300);
+                    // Update URL and switch page
+                    updateURL(targetPage);
+                    switchToPage(targetPage);
+                    
+                    // Close mobile menu if open
+                    if (window.innerWidth <= 768) {
+                        document.querySelector('nav').style.display = 'none';
+                    }
                 }
-                
-                // Close mobile menu if open
-                if (window.innerWidth <= 768) {
-                    document.querySelector('nav').style.display = 'none';
-                }
-                
-                // Scroll to top
-                window.scrollTo(0, 0);
             });
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function(event) {
+            handleRouteChange();
         });
 
         // Close mobile menu when clicking outside
