@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISO Compliance Diagnostic — Certivaxis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── CERTIVAXIS BRAND TOKENS (extracted from logo) ──
+     Green:      #287832  (CERTIV lettering)
+     Navy:       #0a1e32  (AXIS lettering)
+     Green mid:  #1e6626  (darker green shade)
+     Green glow: rgba(40,120,50,0.12)
+     Navy light: #152840  (card surfaces)
+  ── */
+  :root {
+    --green:        #287832;
+    --green-hover:  #1e6626;
+    --green-light:  #3a9c44;
+    --green-glow:   rgba(40,120,50,0.12);
+    --green-border: rgba(40,120,50,0.30);
+    --navy:         #0a1e32;
+    --navy-mid:     #0f2740;
+    --navy-card:    #132d48;
+    --navy-hi:      #1a3655;
+    --border:       rgba(255,255,255,0.10);
+    --border-light: rgba(255,255,255,0.06);
+    --text:         #f0f4f8;
+    --text-muted:   #8fafc8;
+    --text-dim:     #567090;
+    --danger:       #e05252;
+    --danger-bg:    rgba(224,82,82,0.12);
+    --warn:         #e09a30;
+    --warn-bg:      rgba(224,154,48,0.12);
+    --success:      #3ab554;
+    --success-bg:   rgba(58,181,84,0.12);
+    --radius:       12px;
+    --radius-sm:    8px;
+    --radius-xs:    6px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--navy);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .page-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  /* ═══════════════════════════
+     THE EMBED WIDGET
+  ═══════════════════════════ */
+  .diag-embed {
+    width: 100%;
+    max-width: 680px;
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  /* Green + Navy dual-tone top bar — mirrors the logo split */
+  .diag-embed::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--green) 55%, var(--navy-mid) 55%, #1a3655 100%);
+  }
+
+  /* ── HEADER ── */
+  .diag-header {
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .diag-wordmark {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .wm-certiv { color: #287832; }
+  .wm-axis   { color: #f0f4f8; }
+
+  .header-right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .diag-subtitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .progress-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .progress-track {
+    width: 120px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--green-light));
+    border-radius: 2px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  .progress-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 38px;
+    text-align: right;
+  }
+
+  /* ── BODY ── */
+  .diag-body { padding: 1.75rem 2rem; }
+
+  .screen { display: none; animation: fadeUp 0.25s ease; }
+  .screen.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── INTRO ── */
+  .intro-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    color: var(--green-light);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .chip:hover { border-color: var(--green); color: var(--text); }
+
+  .chip.on {
+    background: var(--green-glow);
+    border-color: var(--green);
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ── QUESTIONS ── */
+  .q-area-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--green-light);
+    background: var(--green-glow);
+    border: 1px solid var(--green-border);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 0.85rem;
+  }
+
+  .q-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 0.4rem;
+  }
+
+  .q-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 9px; margin-bottom: 1.5rem; }
+
+  .opt {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.18s;
+    background: transparent;
+  }
+
+  .opt:hover { border-color: var(--green-border); background: var(--green-glow); }
+  .opt.selected { border-color: var(--green); background: var(--green-glow); }
+
+  .opt-indicator {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .opt.selected .opt-indicator {
+    border-color: var(--green);
+    background: var(--green);
+  }
+
+  .opt.selected .opt-indicator::after {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .opt-text {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    transition: color 0.18s;
+  }
+
+  .opt.selected .opt-text,
+  .opt:hover .opt-text { color: var(--text); }
+
+  /* ── NAV ── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .btn-ghost {
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+  .btn-ghost:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+
+  /* Primary = Certivaxis green */
+  .btn-primary {
+    padding: 11px 26px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--green);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .btn-primary:hover { background: var(--green-hover); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: 0.4; cursor: default; pointer-events: none; transform: none; }
+  .btn-full { width: 100%; }
+
+  /* ── CAPTURE ── */
+  .capture-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--navy-mid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  .form-input::placeholder { color: var(--text-dim); }
+  .form-input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+
+  .privacy-note {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 10px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* ── RESULTS ── */
+  .result-intro {
+    font-size: 19px; font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .result-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .score-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: var(--navy-hi);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+  }
+
+  .score-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+  .score-ring-wrap svg { transform: rotate(-90deg); }
+
+  .score-ring-num {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700;
+    color: var(--text);
+  }
+
+  .score-info-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .score-info-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  .section-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--green-light);
+    margin-bottom: 10px;
+  }
+
+  .area-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .area-row:last-child { border-bottom: none; }
+  .area-name { font-size: 13px; color: var(--text-muted); flex: 1; }
+
+  .area-bar-track {
+    width: 100px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    flex-shrink: 0; overflow: hidden;
+  }
+
+  .area-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+  .area-pct { font-size: 12px; font-weight: 600; width: 34px; text-align: right; flex-shrink: 0; }
+
+  .recos { margin-top: 1.25rem; margin-bottom: 1.5rem; }
+
+  .reco-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .reco-item:last-child { border-bottom: none; }
+  .reco-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .reco-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .reco-text  { font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+
+  /* ── CTA BOX — green tinted ── */
+  .cta-box {
+    background: var(--green-glow);
+    border: 1px solid var(--green-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .cta-box-title {
+    font-size: 18px; font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .cta-box-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+    max-width: 420px;
+    margin-left: auto; margin-right: auto;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: var(--green);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.18s;
+    border: none;
+  }
+
+  .cta-btn:hover { background: var(--green-hover); transform: translateY(-1px); }
+
+  .divider { height: 1px; background: var(--border-light); margin: 1.25rem 0; }
+
+  .restart-link {
+    display: block; margin-top: 1rem;
+    font-size: 12px; color: var(--text-dim);
+    text-align: center; cursor: pointer;
+    background: none; border: none;
+    font-family: 'Inter', sans-serif;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+
+  .restart-link:hover { color: var(--text-muted); }
+
+  .tag-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--green-glow);
+    border: 1px solid var(--green-border);
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--green-light);
+  }
+
+  .note-box {
+    background: rgba(40,120,50,0.08);
+    border-left: 3px solid var(--green);
+    border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 540px) {
+    .diag-header { padding: 1.25rem 1.25rem 1rem; flex-direction: column; gap: 12px; }
+    .diag-logo { height: 28px; }
+    .header-right { text-align: left; }
+    .progress-wrap { justify-content: flex-start; }
+    .diag-body { padding: 1.25rem; }
+    .form-row { grid-template-columns: 1fr; }
+    .score-hero { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="diag-embed" id="diag-widget">
+  <div class="diag-header">
+    <div class="diag-wordmark"><span class="wm-certiv">CERTIV</span><span class="wm-axis">AXIS</span></div>
+    <div class="header-right">
+      <div class="diag-subtitle">ISO Compliance Diagnostic</div>
+      <div class="progress-wrap">
+        <div class="progress-track"><div class="progress-fill" id="prog"></div></div>
+        <div class="progress-label" id="prog-lbl">0 / 10</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diag-body">
+    <!-- INTRO -->
+    <div id="s-intro" class="screen active">
+      <p class="intro-desc">Answer 10 questions and receive a personalised compliance score with a priority action plan — specific to your industry and gaps.</p>
+      <div class="field-label">Your industry</div>
+      <div class="chips" id="ind-chips">
+        <button class="chip" data-type="ind" data-val="Manufacturing">Manufacturing</button>
+        <button class="chip" data-type="ind" data-val="Mining">Mining</button>
+        <button class="chip" data-type="ind" data-val="Laboratory">Laboratory</button>
+        <button class="chip" data-type="ind" data-val="Fuels & Chemicals">Fuels & Chemicals</button>
+        <button class="chip" data-type="ind" data-val="Construction">Construction</button>
+        <button class="chip" data-type="ind" data-val="Other">Other</button>
+      </div>
+      <div class="field-label">Company size</div>
+      <div class="chips" id="sz-chips">
+        <button class="chip" data-type="sz" data-val="1-10">1–10 staff</button>
+        <button class="chip" data-type="sz" data-val="11-50">11–50 staff</button>
+        <button class="chip" data-type="sz" data-val="51-200">51–200 staff</button>
+        <button class="chip" data-type="sz" data-val="200+">200+ staff</button>
+      </div>
+      <button class="btn-primary" id="start-btn" disabled>Begin diagnostic &rarr;</button>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:10px">Takes 3 minutes · No login required · Free</div>
+    </div>
+
+    <!-- QUESTION -->
+    <div id="s-q" class="screen">
+      <div class="q-area-tag" id="q-tag"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-sub" id="q-sub"></div>
+      <div class="options" id="q-opts"></div>
+      <div class="nav">
+        <button class="btn-ghost" id="back-btn">← Back</button>
+        <button class="btn-primary" id="next-btn" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- CAPTURE -->
+    <div id="s-cap" class="screen">
+      <div class="q-text">Almost there — where should we send your report?</div>
+      <p class="capture-desc">Your personalised compliance score and priority action plan will be emailed to you as a PDF within minutes.</p>
+      <div class="form-row">
+        <input class="form-input" type="text" id="f-name" placeholder="First name">
+        <input class="form-input" type="text" id="f-company" placeholder="Company name">
+      </div>
+      <input class="form-input" type="email" id="f-email" placeholder="Work email address">
+      <input class="form-input" type="tel" id="f-phone" placeholder="Phone number (optional)">
+      <button class="btn-primary btn-full" id="cap-btn" disabled>Get my compliance report →</button>
+      <p class="privacy-note">No spam. Your details are used only to deliver your report and follow up if you request support.<br>Certivaxis (Pty) Ltd · Westville, Durban · info@certivaxis.com</p>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="s-res" class="screen">
+      <div class="result-intro" id="res-head"></div>
+      <div class="result-sub" id="res-sub"></div>
+      <div class="score-hero">
+        <div class="score-ring-wrap">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="6"/>
+            <circle id="ring" cx="40" cy="40" r="32" fill="none" stroke="var(--green)" stroke-width="6" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"/>
+          </svg>
+          <div class="score-ring-num" id="ring-num">0%</div>
+        </div>
+        <div>
+          <div class="score-info-title" id="res-level"></div>
+          <div class="score-info-desc" id="res-level-desc"></div>
+        </div>
+      </div>
+      <div class="section-label">Score by compliance area</div>
+      <div id="area-rows"></div>
+      <div class="divider"></div>
+      <div class="section-label">Your priority actions</div>
+      <div class="recos" id="recos"></div>
+      <div class="cta-box">
+        <div class="cta-box-title">Ready to close these gaps?</div>
+        <div class="cta-box-desc">Book a free 30-minute strategy call. A Certivaxis consultant will walk through your results and give you a clear, costed roadmap to certification.</div>
+        <a class="cta-btn" href="https://wa.me/message/3377REEFGVMCD1" target="_blank">Book a strategy call →</a>
+      </div>
+      <button class="restart-link">Start the diagnostic again</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  // ----------------------------------------------
+  // FIXED LEAD GENERATION DIAGNOSTIC MACHINE
+  // BUGS FIXED: chip selection, progress, validation, results engine
+  // ----------------------------------------------
+  (function() {
+    // ---------- QUESTIONS DATA ----------
+    const QUESTIONS = [
+      { area: "Documentation", text: "Do you have documented policies and procedures for your key processes?", sub: "ISO standards require controlled documentation.", options: ["Fully documented and controlled", "Partially documented", "Minimal / ad-hoc documentation"] },
+      { area: "Risk Management", text: "How do you identify and treat business risks?", sub: "Risk-based thinking is central to ISO 9001, 14001, 45001.", options: ["Formal risk register and regular reviews", "Informal risk assessment", "No structured risk process"] },
+      { area: "Internal Audit", text: "Do you perform internal audits of your management system?", sub: "Internal audits ensure compliance and improvement.", options: ["Yes, scheduled audits by trained staff", "Occasional checks", "No internal audit program"] },
+      { area: "Training & Competence", text: "How do you ensure employees are competent?", sub: "ISO requires documented competence management.", options: ["Skills matrix + regular training records", "On-the-job only", "No formal competence tracking"] },
+      { area: "Corrective Actions", text: "How do you handle non-conformities?", sub: "Root cause analysis prevents recurrence.", options: ["Formal CAPA system", "Fix issues when they occur", "No structured corrective action"] },
+      { area: "Leadership & Policy", text: "Does leadership actively support your management system?", sub: "Top management commitment is mandatory.", options: ["Yes, policy + regular management reviews", "Policy exists but no reviews", "No visible leadership commitment"] },
+      { area: "Monitoring & KPIs", text: "Do you track performance metrics?", sub: "Monitoring effectiveness is key for certification.", options: ["Regular KPI reviews", "Some metrics tracked", "No performance measurement"] },
+      { area: "Supplier Management", text: "How do you control external providers?", sub: "ISO requires supplier evaluation and monitoring.", options: ["Approved supplier list with regular evaluation", "Basic checks on key suppliers", "No formal supplier control"] },
+      { area: "Customer Focus", text: "How do you capture customer feedback?", sub: "Customer satisfaction is a core ISO principle.", options: ["Structured surveys & complaint process", "Occasional feedback", "No formal feedback system"] },
+      { area: "Continual Improvement", text: "Do you have a process for improvement initiatives?", sub: "ISO expects proactive improvement culture.", options: ["Structured improvement program", "Reactive improvements only", "No improvement process"] }
+    ];
+    const AREA_WEIGHTS = [10,10,10,10,10,10,10,10,10,10]; // each 10 pts max = 100
+
+    let state = {
+      industry: "",
+      size: "",
+      answers: new Array(10).fill(null),
+      currentQ: 0,
+      captured: { name: "", company: "", email: "", phone: "" }
+    };
+
+    // DOM elements
+    const screens = { intro: document.getElementById('s-intro'), q: document.getElementById('s-q'), cap: document.getElementById('s-cap'), res: document.getElementById('s-res') };
+    const startBtn = document.getElementById('start-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const backBtn = document.getElementById('back-btn');
+    const capBtn = document.getElementById('cap-btn');
+    const progFill = document.getElementById('prog');
+    const progLbl = document.getElementById('prog-lbl');
+    const qText = document.getElementById('q-text');
+    const qSub = document.getElementById('q-sub');
+    const qTag = document.getElementById('q-tag');
+    const qOpts = document.getElementById('q-opts');
+
+    // Helper: update progress bar (based on answered questions)
+    function updateProgress() {
+      let answered = state.answers.filter(a => a !== null).length;
+      let percent = (answered / QUESTIONS.length) * 100;
+      progFill.style.width = percent + '%';
+      progLbl.innerText = `${answered} / ${QUESTIONS.length}`;
+      if (nextBtn) nextBtn.disabled = (state.answers[state.currentQ] === null);
+    }
+
+    // Render current question
+    function renderQuestion() {
+      const q = QUESTIONS[state.currentQ];
+      qTag.innerText = q.area.toUpperCase();
+      qText.innerText = q.text;
+      qSub.innerText = q.sub;
+      qOpts.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const optDiv = document.createElement('div');
+        optDiv.className = 'opt' + (state.answers[state.currentQ] === idx ? ' selected' : '');
+        optDiv.innerHTML = `<div class="opt-indicator"></div><div class="opt-text">${opt}</div>`;
+        optDiv.addEventListener('click', () => {
+          state.answers[state.currentQ] = idx;
+          document.querySelectorAll('#q-opts .opt').forEach(el => el.classList.remove('selected'));
+          optDiv.classList.add('selected');
+          updateProgress();
+        });
+        qOpts.appendChild(optDiv);
+      });
+      updateProgress();
+      backBtn.disabled = (state.currentQ === 0);
+    }
+
+    // Navigation
+    window.prevQ = function() {
+      if (state.currentQ > 0) {
+        state.currentQ--;
+        renderQuestion();
+        showScreen('q');
+      }
+    };
+    window.nextQ = function() {
+      if (state.answers[state.currentQ] !== null) {
+        if (state.currentQ + 1 < QUESTIONS.length) {
+          state.currentQ++;
+          renderQuestion();
+          showScreen('q');
+        } else {
+          // all questions answered -> move to capture
+          showScreen('cap');
+          checkCaptureValid();
+        }
+      }
+    };
+    // rebind listeners
+    if(backBtn) backBtn.onclick = () => window.prevQ();
+    if(nextBtn) nextBtn.onclick = () => window.nextQ();
+
+    // Chip selection logic (fixed)
+    function initChips() {
+      const allChips = document.querySelectorAll('.chip');
+      allChips.forEach(chip => {
+        chip.removeEventListener('click', chip._listener);
+        const handler = (e) => {
+          const type = chip.getAttribute('data-type');
+          const val = chip.getAttribute('data-val');
+          if(type === 'ind') {
+            document.querySelectorAll('#ind-chips .chip').forEach(c => c.classList.remove('on'));
+            state.industry = val;
+            chip.classList.add('on');
+          } else if(type === 'sz') {
+            document.querySelectorAll('#sz-chips .chip').forEach(c => c.classList.remove('on'));
+            state.size = val;
+            chip.classList.add('on');
+          }
+          checkStartEnabled();
+        };
+        chip.addEventListener('click', handler);
+        chip._listener = handler;
+      });
+    }
+    function checkStartEnabled() {
+      startBtn.disabled = !(state.industry && state.size);
+    }
+    window.setChip = function(type, val, el) { // legacy fallback
+      if(type === 'ind') {
+        state.industry = val;
+        document.querySelectorAll('#ind-chips .chip').forEach(c => c.classList.remove('on'));
+      } else if(type === 'sz') {
+        state.size = val;
+        document.querySelectorAll('#sz-chips .chip').forEach(c => c.classList.remove('el'));
+      }
+      if(el) el.classList.add('on');
+      checkStartEnabled();
+    };
+    initChips();
+
+    function showScreen(name) {
+      Object.keys(screens).forEach(s => screens[s].classList.remove('active'));
+      screens[name].classList.add('active');
+    }
+
+    window.startDiag = function() {
+      if (!state.industry || !state.size) return;
+      state.answers = new Array(10).fill(null);
+      state.currentQ = 0;
+      renderQuestion();
+      showScreen('q');
+    };
+    startBtn.onclick = () => window.startDiag();
+
+    // Capture validation
+    function checkCaptureValid() {
+      const name = document.getElementById('f-name').value.trim();
+      const company = document.getElementById('f-company').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const isValid = name !== '' && company !== '' && email !== '' && email.includes('@');
+      capBtn.disabled = !isValid;
+    }
+    document.getElementById('f-name').addEventListener('input', checkCaptureValid);
+    document.getElementById('f-company').addEventListener('input', checkCaptureValid);
+    document.getElementById('f-email').addEventListener('input', checkCaptureValid);
+    
+    // Results calculation (lead gen engine)
+    function computeResults() {
+      let totalScore = 0;
+      let areaScores = [];
+      for(let i=0; i<QUESTIONS.length; i++) {
+        let ans = state.answers[i];
+        let points = 0;
+        if(ans !== null) {
+          if(ans === 0) points = 10;
+          else if(ans === 1) points = 5;
+          else if(ans === 2) points = 0;
+        }
+        areaScores.push({ area: QUESTIONS[i].area, score: points, max: 10 });
+        totalScore += points;
+      }
+      let overallPercent = totalScore;
+      return { total: totalScore, percent: overallPercent, areas: areaScores };
+    }
+    
+    function generateRecommendations(areaScores, industry, size) {
+      let recos = [];
+      const weakAreas = areaScores.filter(a => a.score <= 5).sort((a,b)=> a.score - b.score);
+      if(weakAreas.length === 0) recos.push({ title: "Maintain excellence", text: "Your system looks strong. Consider periodic audits and continuous improvement workshops to sustain certification." });
+      weakAreas.slice(0,3).forEach(area => {
+        if(area.area === "Documentation") recos.push({ title: "Strengthen document control", text: "Implement a document management system with version control and approval workflows." });
+        else if(area.area === "Risk Management") recos.push({ title: "Build a risk register", text: "Create a formal risk register and schedule quarterly risk reviews aligned with ISO 31000." });
+        else if(area.area === "Internal Audit") recos.push({ title: "Launch internal audit program", text: "Train internal auditors and schedule bi-annual audits to identify gaps proactively." });
+        else if(area.area === "Training & Competence") recos.push({ title: "Competence matrix required", text: "Develop a skills matrix and training plan to demonstrate personnel competence." });
+        else if(area.area === "Corrective Actions") recos.push({ title: "Implement CAPA system", text: "Adopt root cause analysis and corrective action tracking to prevent recurrence." });
+        else if(area.area === "Leadership & Policy") recos.push({ title: "Boost leadership involvement", text: "Schedule management reviews and define a clear quality/environmental policy." });
+        else if(area.area === "Monitoring & KPIs") recos.push({ title: "Define performance KPIs", text: "Set up a dashboard with key metrics to monitor system effectiveness." });
+        else if(area.area === "Supplier Management") recos.push({ title: "Supplier evaluation process", text: "Create approved vendor list and conduct regular supplier performance reviews." });
+        else if(area.area === "Customer Focus") recos.push({ title: "Customer feedback loop", text: "Implement surveys and a formal complaint handling process." });
+        else if(area.area === "Continual Improvement") recos.push({ title: "Improvement culture", text: "Launch a suggestion scheme and improvement project tracking." });
+        else recos.push({ title: `Improve ${area.area}`, text: "Focus on closing gaps in this area with a structured action plan." });
+      });
+      if(recos.length === 0) recos.push({ title: "Great foundation", text: "You are on track for certification. Let's fine-tune your existing processes." });
+      return recos.slice(0,4);
+    }
+    
+    function renderResults() {
+      const results = computeResults();
+      const percent = results.percent;
+      let level = "", levelDesc = "";
+      if(percent >= 80) { level = "High Compliance"; levelDesc = "You're well positioned for certification. Minor improvements recommended."; }
+      else if(percent >= 50) { level = "Partial Compliance"; levelDesc = "Significant gaps exist. A structured roadmap will accelerate certification."; }
+      else { level = "Low Compliance"; levelDesc = "Major gaps detected. Our consultants can help you build a system from scratch."; }
+      
+      document.getElementById('res-head').innerText = `Your compliance score: ${percent}%`;
+      document.getElementById('res-sub').innerText = `Based on ${QUESTIONS.length} key areas for ${state.industry} (${state.size} employees).`;
+      document.getElementById('res-level').innerText = level;
+      document.getElementById('res-level-desc').innerText = levelDesc;
+      
+      const circumference = 201; // 2*pi*32 ≈ 201
+      const offset = circumference - (percent/100) * circumference;
+      const ring = document.getElementById('ring');
+      if(ring) ring.style.strokeDashoffset = offset;
+      document.getElementById('ring-num').innerText = percent + "%";
+      
+      const areaRows = document.getElementById('area-rows');
+      areaRows.innerHTML = '';
+      results.areas.forEach(area => {
+        const row = document.createElement('div');
+        row.className = 'area-row';
+        row.innerHTML = `
+          <div class="area-name">${area.area}</div>
+          <div class="area-bar-track"><div class="area-bar-fill" style="width:${area.score}%; background: var(--green);"></div></div>
+          <div class="area-pct">${area.score}%</div>
+        `;
+        areaRows.appendChild(row);
+      });
+      
+      const recos = generateRecommendations(results.areas, state.industry, state.size);
+      const recosDiv = document.getElementById('recos');
+      recosDiv.innerHTML = '';
+      recos.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'reco-item';
+        item.innerHTML = `<div class="reco-dot" style="background: var(--green);"></div><div><div class="reco-title">${r.title}</div><div class="reco-text">${r.text}</div></div>`;
+        recosDiv.appendChild(item);
+      });
+    }
+    
+    window.showResults = function() {
+      const name = document.getElementById('f-name').value.trim();
+      const company = document.getElementById('f-company').value.trim();
+      const email = document.getElementById('f-email').value.trim();
+      const phone = document.getElementById('f-phone').value.trim();
+      if (!name || !company || !email || !email.includes('@')) return;
+      state.captured = { name, company, email, phone };
+      // LEAD CAPTURE SIMULATION (console & alert for demo - in production send to CRM/webhook)
+      console.log("Lead captured:", state.captured, "Industry:", state.industry, "Size:", state.size, "Answers:", state.answers);
+      // In production: send to server endpoint or webhook
+      alert(`Thank you ${name}! Your report is being prepared. You will receive it shortly at ${email}.`);
+      renderResults();
+      showScreen('res');
+    };
+    capBtn.onclick = () => window.showResults();
+    
+    window.restart = function() {
+      state = { industry: state.industry, size: state.size, answers: new Array(10).fill(null), currentQ: 0, captured: { name: "", company: "", email: "", phone: "" } };
+      document.querySelectorAll('#ind-chips .chip, #sz-chips .chip').forEach(c => c.classList.remove('on'));
+      if(state.industry) {
+        const chipMatch = Array.from(document.querySelectorAll('#ind-chips .chip')).find(c => c.getAttribute('data-val') === state.industry);
+        if(chipMatch) chipMatch.classList.add('on');
+      }
+      if(state.size) {
+        const chipMatch = Array.from(document.querySelectorAll('#sz-chips .chip')).find(c => c.getAttribute('data-val') === state.size);
+        if(chipMatch) chipMatch.classList.add('on');
+      }
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-company').value = '';
+      document.getElementById('f-email').value = '';
+      document.getElementById('f-phone').value = '';
+      checkStartEnabled();
+      updateProgress();
+      showScreen('intro');
+    };
+    document.querySelector('.restart-link').onclick = () => window.restart();
+    checkStartEnabled();
+    updateProgress();
+  })();
+</script>
+</body>
+</html>
