@@ -255,6 +255,16 @@ section {
     transform: translateY(-10px);
 }
 
+a.card {
+    text-decoration: none;
+    display: block;
+    color: inherit;
+}
+
+a.card:hover h3 {
+    color: var(--secondary);
+}
+
 .card-icon {
     font-size: 2.5rem;
     color: var(--secondary);
