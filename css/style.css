@@ -162,7 +162,12 @@ nav ul li a:hover, nav ul li a.active {
     border-radius: 4px;
     text-decoration: none;
     font-weight: 600;
-    transition: var(--transition);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
 }
 
 .btn-primary {
@@ -172,7 +177,6 @@ nav ul li a:hover, nav ul li a.active {
 
 .btn-primary:hover {
     background-color: #1b5e20;
-    transform: translateY(-3px);
 }
 
 .btn-outline {
@@ -184,7 +188,6 @@ nav ul li a:hover, nav ul li a.active {
 .btn-outline:hover {
     background-color: var(--white);
     color: var(--primary);
-    transform: translateY(-3px);
 }
 
 .btn-whatsapp {
@@ -197,7 +200,6 @@ nav ul li a:hover, nav ul li a.active {
 
 .btn-whatsapp:hover {
     background-color: #128C7E;
-    transform: translateY(-3px);
 }
 
 /* Sections */
@@ -247,12 +249,13 @@ section {
     border-radius: 8px;
     padding: 30px;
     box-shadow: var(--shadow);
-    transition: var(--transition);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
     border-top: 4px solid var(--secondary);
 }
 
 .card:hover {
-    transform: translateY(-10px);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 a.card {
@@ -269,6 +272,11 @@ a.card:hover h3 {
     font-size: 2.5rem;
     color: var(--secondary);
     margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-icon {
+    transform: scale(1.15);
 }
 
 /* Footer */
@@ -410,4 +418,9 @@ footer ul li a:hover {
     width: 100%;
     border-radius: 8px;
     box-shadow: var(--shadow);
+    transition: transform 0.5s ease;
+}
+
+.service-image:hover {
+    transform: scale(1.03);
 }
